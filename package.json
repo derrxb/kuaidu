@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "packages/www",
-    "packages/ext"
+    "packages/ext",
+    "packages/processing"
   ],
   "dependencies": {},
   "devDependencies": {

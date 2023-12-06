@@ -1,0 +1,17 @@
+{
+  "name": "processing",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "build": "npx ts-node -O '{\"module\":\"commonjs\"}' ./index.ts"
+  },
+  "dependencies": {
+    "lmdb": "^2.9.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
