@@ -1,5 +1,6 @@
 import lmdb, { open } from "lmdb";
 import fs from "fs/promises";
+import { memoizeGetToneFromPinyin } from "./pinyin";
 
 const getDatabase = (path: string) => {
   return open({
@@ -30,15 +31,16 @@ const getBasicWords = async (path: string) => {
     const definition = definitions[i];
 
     const chunks = definition?.split(" ");
+    const rawPinyin = definition.match(pattern)
+      ? (definition.match(pattern)?.[0].slice(1, -1).split(" ") as string[])
+      : [""];
 
     dictionary[chunks[0]] = {
+      rawPinyin,
       traditional: chunks[0],
       simplified: chunks[1],
-      rawPinyin: definition.match(pattern)
-        ? (definition.match(pattern)?.[0].slice(1, -1).split(" ") as string[])
-        : [""],
       definition: definition.replace(pattern, "").split(" ").slice(2).join(" "),
-      pinyin: [],
+      pinyin: await Promise.all(rawPinyin.map(memoizeGetToneFromPinyin)),
     };
   }
 
@@ -51,9 +53,9 @@ const saveDictionary = async (
   database: lmdb.RootDatabase<any, lmdb.Key>
 ) => {
   const ids = Object.keys(dictionary);
-  for (let i = 0; i < ids.length; i += 1) {
-    await database.put(ids[i], dictionary[ids[i]]);
-  }
+  await Promise.all(
+    ids.map((key, index) => database.put(ids[index], dictionary[ids[index]]))
+  );
 };
 
 const getBlazingFastDatabase = async (dbPath: string, dictPath: string) => {

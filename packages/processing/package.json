@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
-    "build": "npx ts-node -O '{\"module\":\"commonjs\"}' ./index.ts",
+    "build:dictionary": "npx ts-node -O '{\"module\":\"commonjs\"}' ./index.ts",
     "pinyin": "npx ts-node -O '{\"module\":\"commonjs\"}' ./pinyin.ts"
   },
   "dependencies": {

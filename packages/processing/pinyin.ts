@@ -109,8 +109,6 @@ const getToneFromPinyin = (pinyin: string) => {
     rawToneMarker
   );
 
-  console.log(pinyinWithToneMarkers);
-
   return pinyinWithToneMarkers;
 };
 
@@ -121,4 +119,4 @@ const getToneFromPinyin = (pinyin: string) => {
  * @param pinyin
  * @returns
  */
-const memoizeGetToneFromPinyin = memoize(getToneFromPinyin);
+export const memoizeGetToneFromPinyin = memoize(getToneFromPinyin);
