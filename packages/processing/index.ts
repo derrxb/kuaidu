@@ -53,9 +53,7 @@ const saveDictionary = async (
   database: lmdb.RootDatabase<any, lmdb.Key>
 ) => {
   const ids = Object.keys(dictionary);
-  await Promise.all(
-    ids.map((key, index) => database.put(ids[index], dictionary[ids[index]]))
-  );
+  await Promise.all(ids.map((key) => database.put(key, dictionary[key])));
 };
 
 const getBlazingFastDatabase = async (dbPath: string, dictPath: string) => {
