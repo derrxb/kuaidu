@@ -21,9 +21,14 @@ type Dictionary = Record<
   }
 >;
 
-const getBasicWords = async (path: string) => {
+const getDictionaryString = async (path: string) => {
   const file = await fs.open(path);
   const dictString = await file.readFile({ encoding: "utf8" });
+  return [dictString, file] as [string, typeof file];
+};
+
+const getBasicWords = async (path: string) => {
+  const [dictString, file] = await getDictionaryString(path);
   const definitions = dictString.split("\r\n");
   const dictionary: Dictionary = {};
   const pattern = /\[([^\]]+)\]/;
@@ -84,6 +89,22 @@ const getBlazingFastDatabase = async (dbPath: string, dictPath: string) => {
   console.time("[Action] Saving data");
   await saveDictionary(dictionary, database);
   console.timeEnd("[Action] Saving data");
+};
+
+const printSomeSampleData = async (
+  dbPath: string,
+  dictPath: string,
+  count: number = 100
+) => {
+  const database = getDatabase(dbPath);
+  const [dictString, file] = await getDictionaryString(dictPath);
+  const definitions = dictString.split("\r\n");
+
+  for (let i = 0; i < count; i += 1) {
+    const key =
+      definitions[Math.floor(Math.random() * definitions.length)]?.[0];
+    console.log(database.get(key));
+  }
 };
 
 getBlazingFastDatabase(
