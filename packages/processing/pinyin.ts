@@ -29,7 +29,11 @@ const vowelRegex: Record<string, RegExp> = {
 
 const findFirstVowelIndex = (pinyin: string): number => {
   const vowelMatches = pinyin.match(vowelIndexRegex);
-  return vowelMatches ? vowelMatches.index || -1 : -1;
+  return vowelMatches
+    ? typeof vowelMatches.index === "number"
+      ? vowelMatches.index
+      : -1
+    : -1;
 };
 
 const getToneMark = (
@@ -89,6 +93,12 @@ const getToneFromPinyin = (pinyin: string) => {
     return;
   }
 
+  // TODO: I don't really understand this. See details on cc-cedict page
+  // here:
+  if (pinyin === "r5") {
+    return pinyin;
+  }
+
   let rawToneMarker: number;
   try {
     rawToneMarker = parseInt(pinyin[pinyin.length - 1], 10);
@@ -102,7 +112,18 @@ const getToneFromPinyin = (pinyin: string) => {
   }
 
   const normalizedPinyin = pinyin.slice(0, pinyin.length - 1).toLowerCase();
+
+  if (!normalizedPinyin) {
+    return pinyin;
+  }
+
   const vowelIndex = findFirstVowelIndex(normalizedPinyin);
+
+  // Weird stuff in dictionary
+  if (vowelIndex === -1) {
+    return pinyin;
+  }
+
   const pinyinWithToneMarkers = getToneMark(
     normalizedPinyin,
     vowelIndex,
