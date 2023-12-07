@@ -1,6 +1,7 @@
 import lmdb, { open } from "lmdb";
 import fs from "fs/promises";
 import { memoizeGetToneFromPinyin } from "./pinyin";
+import chunk from "lodash/chunk";
 
 const getDatabase = (path: string) => {
   return open({
@@ -52,14 +53,37 @@ const saveDictionary = async (
   dictionary: Dictionary,
   database: lmdb.RootDatabase<any, lmdb.Key>
 ) => {
-  const ids = Object.keys(dictionary);
-  await Promise.all(ids.map((key) => database.put(key, dictionary[key])));
+  const ids: string[] = Object.keys(dictionary);
+  const chunks = chunk(ids, 1000);
+  const chunksOfChunks = chunks.map((bigChunk) => chunk(bigChunk, 100));
+
+  for (
+    let bigChunkIndex = 0;
+    bigChunkIndex < chunksOfChunks.length;
+    bigChunkIndex += 1
+  ) {
+    await Promise.all(
+      chunksOfChunks[bigChunkIndex].map(async (babyChunk) => {
+        // add these via promise
+        return await Promise.all(
+          babyChunk.map(async (key) => {
+            return await database.put(key, dictionary[key]);
+          })
+        );
+      })
+    );
+  }
 };
 
 const getBlazingFastDatabase = async (dbPath: string, dictPath: string) => {
   const database = getDatabase(dbPath);
+  console.time("[Action] Formatting data");
   const dictionary = await getBasicWords(dictPath);
+  console.timeEnd("[Action] Formatting data");
+
+  console.time("[Action] Saving data");
   await saveDictionary(dictionary, database);
+  console.timeEnd("[Action] Saving data");
 };
 
 getBlazingFastDatabase(
